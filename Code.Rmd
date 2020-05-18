@@ -1,0 +1,74 @@
+---
+title: "TBI"
+author: "Edwin Zhu"
+date: "May 12, 2020"
+output: html_document
+---
+
+```{r, echo=FALSE}
+library(readxl)
+library(ggpubr)
+setwd("C:/Users/edwin/Desktop/Volunteer")
+data_path = "C:/Users/edwin/Desktop/Volunteer/CANTBI DTI JHU stats.xlsx"
+WMF = read_excel(path=data_path, sheet="WMF")
+names(WMF) = as.matrix(WMF[1,])
+WMF = WMF[-1,]
+WMF[] = lapply(WMF, function(x) as.character(x))
+WMF = as.data.frame(WMF)
+
+WMF
+WMF_skeleton = WMF[1:148,]
+WMF_brain = WMF[152:299,]
+WMF_skeleton_ROI = WMF_skeleton[,1:50]
+WMF_skeleton_Tract = WMF_skeleton[,c(1,52:72)]
+WMF_brain_ROI = WMF_skeleton[,1:50]
+WMF_brain_Tract = WMF_skeleton[,c(1,52:72)]
+
+WMF_skeleton_baseline = WMF_skeleton_ROI[grep("A$", WMF_skeleton_ROI$subject),]
+WMF_skeleton_6week = WMF_skeleton_ROI[grep("B$", WMF_skeleton_ROI$subject),]
+
+WMF_skeleton$type = ifelse(grepl("A$", WMF_skeleton$subject), "baseline", "6_week")
+WMF_skeleton
+
+WMF_skeleton_baseline[]
+WMF_skeleton_6week[]
+
+ggplot (WMF_skeleton_baseline, aes(x=as.numeric(`All ROIs`))) + geom_histogram(color="black", fill="white")
+
+t.test((as.numeric(WMF_skeleton_baseline[,2])), (as.numeric(WMF_skeleton_6week[,2])))
+
+ggplot(WMF_skeleton, aes(type, as.numeric(`All ROIs`))) +
+  stat_boxplot(geom = "errorbar") + 
+  geom_boxplot( aes(type, as.numeric(`All ROIs`))) +    
+#  stat_summary(fun.data = mean_se, geom = "errorbar") + 
+  xlab("Type") + 
+  ylab("All ROIs")
+
+wilcox.test((as.numeric(WMF_skeleton_baseline[,2])), (as.numeric(WMF_skeleton_6week[,2])))
+```
+
+```{r, echo=FALSE}
+FA = read_excel(path=data_path, sheet="FA")
+names(FA) = as.matrix(FA[1,])
+FA = FA[-1,]
+FA[] = lapply(FA, function(x) type.convert(as.character(x)))
+FA
+
+MD = read_excel(path=data_path, sheet="MD")
+names(MD) = as.matrix(MD[1,])
+MD = MD[-1,]
+MD[] = lapply(MD, function(x) type.convert(as.character(x)))
+MD
+
+AD = read_excel(path=data_path, sheet="AD")
+names(AD) = as.matrix(AD[1,])
+AD = AD[-1,]
+AD[] = lapply(AD, function(x) type.convert(as.character(x)))
+AD
+
+RD = read_excel(path=data_path, sheet="RD")
+names(RD) = as.matrix(RD[1,])
+RD = RD[-1,]
+RD[] = lapply(RD, function(x) type.convert(as.character(x)))
+RD
+```
