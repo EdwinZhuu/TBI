@@ -6,10 +6,14 @@ output: html_document
 ---
 
 ```{r, echo=FALSE}
+# Setting up appropriate tables
+
 library(readxl)
 library(ggpubr)
 setwd("C:/Users/edwin/Desktop/Volunteer")
 data_path = "C:/Users/edwin/Desktop/Volunteer/CANTBI DTI JHU stats.xlsx"
+data_path_labels = "C:/Users/edwin/Desktop/Volunteer/CANTBIANationalBioba_DATA_LABELS_2020-01-13_0952"
+labels = read_excel(path=data_path_labels, sheet="CANTBIANationalBioba_DATA_LABEL")
 WMF = read_excel(path=data_path, sheet="WMF")
 names(WMF) = as.matrix(WMF[1,])
 WMF = WMF[-1,]
@@ -35,9 +39,11 @@ WMF_skeleton_ROI6week = WMF_skeleton_ROI[grep("B$", WMF_skeleton_ROI$subject),]
 # WMF_skeleton
 # WMF_skeleton_baseline[]
 # WMF_skeleton_6week[]
+```
 
+```{r, echo=FALSE}
 ggplot (WMF_skeleton_ROIbaseline, aes(x=as.numeric(`All ROIs`))) + geom_histogram(color="black", fill="white")
-ggdensity(as.numeric(WMF_skeleton_ROIbaseline$`All ROIs`), main = "test")
+# ggdensity(as.numeric(WMF_skeleton_ROIbaseline$`All ROIs`), main = "test")
 shapiro.test(as.numeric(WMF_skeleton_ROIbaseline$`All ROIs`))
 # P-value > 0.05 assume normality
 
@@ -47,7 +53,8 @@ shapiro.test(as.numeric(WMF_skeleton_ROI6week$`All ROIs`))
 
 t.test((as.numeric(WMF_skeleton_ROIbaseline[,2])), (as.numeric(WMF_skeleton_ROI6week[,2])))
 
-
+ggplot(WMF_skeleton_ROI, aes(x=as.numeric(`All ROIs`), fill=type, color=type)) +
+  geom_histogram(position="identity", alpha=0.5)
 
 ggplot(WMF_skeleton, aes(type, as.numeric(`All ROIs`))) +
   stat_boxplot(geom = "errorbar") + 
@@ -56,7 +63,16 @@ ggplot(WMF_skeleton, aes(type, as.numeric(`All ROIs`))) +
   ylab("All ROIs")
 
 # wilcox.test((as.numeric(WMF_skeleton_baseline[,2])), (as.numeric(WMF_skeleton_6week[,2])))
+
+# histograms run for both baseline and 6 week for the skeleton based on all ROIs
+# Both follwed a normal distribution based on the shapiro test
+# t.test shows that there is a difference between means 
 ```
+
+```{r, echo=FALSE}
+WMF_skeleton_ROI_control= WMF_skeleton_ROI[grep("TC", WMF_skeleton_ROI$subject),]
+```
+
 
 ```{r, echo=FALSE}
 FA = read_excel(path=data_path, sheet="FA")
