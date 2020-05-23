@@ -16,35 +16,46 @@ WMF = WMF[-1,]
 WMF[] = lapply(WMF, function(x) as.character(x))
 WMF = as.data.frame(WMF)
 
-WMF
 WMF_skeleton = WMF[1:148,]
-WMF_brain = WMF[152:299,]
-WMF_skeleton_ROI = WMF_skeleton[,1:50]
-WMF_skeleton_Tract = WMF_skeleton[,c(1,52:72)]
-WMF_brain_ROI = WMF_skeleton[,1:50]
-WMF_brain_Tract = WMF_skeleton[,c(1,52:72)]
-
-WMF_skeleton_baseline = WMF_skeleton_ROI[grep("A$", WMF_skeleton_ROI$subject),]
-WMF_skeleton_6week = WMF_skeleton_ROI[grep("B$", WMF_skeleton_ROI$subject),]
-
 WMF_skeleton$type = ifelse(grepl("A$", WMF_skeleton$subject), "baseline", "6_week")
-WMF_skeleton
+WMF_brain = WMF[152:299,]
+WMF_brain$type = ifelse(grepl("A$", WMF_brain$subject), "baseline", "6_week")
+WMF_skeleton_ROI = WMF_skeleton[,c(1:50,73)]
+WMF_skeleton_Tract = WMF_skeleton[,c(1,52:73)]
+WMF_brain_ROI = WMF_skeleton[,c(1:50,73)]
+WMF_brain_Tract = WMF_skeleton[,c(1,52:73)]
+# Split the dataset into 4 separate datasets
+# Skeleton tract and ROI and brain ROI and tract
+# Create new column that categorizes each row as either baseline or a 6 week patient
 
-WMF_skeleton_baseline[]
-WMF_skeleton_6week[]
+WMF_skeleton_ROIbaseline = WMF_skeleton_ROI[grep("A$", WMF_skeleton_ROI$subject),]
+WMF_skeleton_ROI6week = WMF_skeleton_ROI[grep("B$", WMF_skeleton_ROI$subject),]
+# Split skeleton ROI table into two tables based on baseline or 6 week
 
-ggplot (WMF_skeleton_baseline, aes(x=as.numeric(`All ROIs`))) + geom_histogram(color="black", fill="white")
+# WMF_skeleton
+# WMF_skeleton_baseline[]
+# WMF_skeleton_6week[]
 
-t.test((as.numeric(WMF_skeleton_baseline[,2])), (as.numeric(WMF_skeleton_6week[,2])))
+ggplot (WMF_skeleton_ROIbaseline, aes(x=as.numeric(`All ROIs`))) + geom_histogram(color="black", fill="white")
+ggdensity(as.numeric(WMF_skeleton_ROIbaseline$`All ROIs`), main = "test")
+shapiro.test(as.numeric(WMF_skeleton_ROIbaseline$`All ROIs`))
+# P-value > 0.05 assume normality
+
+ggplot (WMF_skeleton_ROI6week, aes(x=as.numeric(`All ROIs`))) + geom_histogram(color="black", fill="white")
+shapiro.test(as.numeric(WMF_skeleton_ROI6week$`All ROIs`))
+# Assume normality
+
+t.test((as.numeric(WMF_skeleton_ROIbaseline[,2])), (as.numeric(WMF_skeleton_ROI6week[,2])))
+
+
 
 ggplot(WMF_skeleton, aes(type, as.numeric(`All ROIs`))) +
   stat_boxplot(geom = "errorbar") + 
   geom_boxplot( aes(type, as.numeric(`All ROIs`))) +    
-#  stat_summary(fun.data = mean_se, geom = "errorbar") + 
   xlab("Type") + 
   ylab("All ROIs")
 
-wilcox.test((as.numeric(WMF_skeleton_baseline[,2])), (as.numeric(WMF_skeleton_6week[,2])))
+# wilcox.test((as.numeric(WMF_skeleton_baseline[,2])), (as.numeric(WMF_skeleton_6week[,2])))
 ```
 
 ```{r, echo=FALSE}
