@@ -12,8 +12,8 @@ library(readxl)
 library(ggpubr)
 setwd("C:/Users/edwin/Desktop/Volunteer")
 data_path = "C:/Users/edwin/Desktop/Volunteer/CANTBI DTI JHU stats.xlsx"
-data_path_labels = "C:/Users/edwin/Desktop/Volunteer/CANTBIANationalBioba_DATA_LABELS_2020-01-13_0952"
-labels = read_excel(path=data_path_labels, sheet="CANTBIANationalBioba_DATA_LABEL")
+data_path_labels = "C:/Users/edwin/Desktop/Volunteer/CANTBIANationalBioba_DATA_LABELS_2020-01-13_0952.xlsx"
+labels = read_excel(path=data_path_labels)
 WMF = read_excel(path=data_path, sheet="WMF")
 names(WMF) = as.matrix(WMF[1,])
 WMF = WMF[-1,]
@@ -42,6 +42,10 @@ WMF_skeleton_ROI6week = WMF_skeleton_ROI[grep("B$", WMF_skeleton_ROI$subject),]
 ```
 
 ```{r, echo=FALSE}
+# basic use of shapiro test and plotting
+# Does not include sex and age
+# Does not separate test and base cases
+
 ggplot (WMF_skeleton_ROIbaseline, aes(x=as.numeric(`All ROIs`))) + geom_histogram(color="black", fill="white")
 # ggdensity(as.numeric(WMF_skeleton_ROIbaseline$`All ROIs`), main = "test")
 shapiro.test(as.numeric(WMF_skeleton_ROIbaseline$`All ROIs`))
@@ -70,7 +74,9 @@ ggplot(WMF_skeleton, aes(type, as.numeric(`All ROIs`))) +
 ```
 
 ```{r, echo=FALSE}
-WMF_skeleton_ROI_control= WMF_skeleton_ROI[grep("TC", WMF_skeleton_ROI$subject),]
+WMF_skeleton_ROI
+WMF_labels = merge(x = WMF_skeleton_ROI, y = labels, by = "subject")
+WMF_labels
 ```
 
 
