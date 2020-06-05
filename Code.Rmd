@@ -75,8 +75,15 @@ ggplot(WMF_skeleton, aes(type, as.numeric(`All ROIs`))) +
 
 ```{r, echo=FALSE}
 WMF_skeleton_ROI
-WMF_labels = merge(x = WMF_skeleton_ROI, y = labels, by = "subject")
-WMF_labels
+labels = na.omit(labels)
+colnames(labels)[1] = "subject"
+test = stringdist_inner_join(WMF_skeleton_ROI, labels, by = "subject", max_dist = 1)
+test
+# WMF_labels = merge(WMF_skeleton_ROI, labels, by="subject")
+# WMF_labels
+# agrep(WMF_brain_ROI[1,1], labels$subject, max.distance = 1)
+# labels$subject
+
 ```
 
 
