@@ -10,10 +10,10 @@ output: html_document
 
 library(readxl)
 library(ggpubr)
+library(tidyr)
+library(dplyr)
 setwd("C:/Users/edwin/Desktop/Volunteer")
 data_path = "C:/Users/edwin/Desktop/Volunteer/CANTBI DTI JHU stats.xlsx"
-data_path_labels = "C:/Users/edwin/Desktop/Volunteer/CANTBIANationalBioba_DATA_LABELS_2020-01-13_0952.xlsx"
-labels = read_excel(path=data_path_labels)
 WMF = read_excel(path=data_path, sheet="WMF")
 names(WMF) = as.matrix(WMF[1,])
 WMF = WMF[-1,]
@@ -74,15 +74,21 @@ ggplot(WMF_skeleton, aes(type, as.numeric(`All ROIs`))) +
 ```
 
 ```{r, echo=FALSE}
-WMF_skeleton_ROI
-labels = na.omit(labels)
+data_path_labels = "C:/Users/edwin/Desktop/Volunteer/CANTBIANationalBioba_DATA_LABELS_2020-01-13_0952.xlsx"
+labels = read_excel(path=data_path_labels)
+# Join two different tables based on subject
+# Used fuzzyjoin
 colnames(labels)[1] = "subject"
-test = stringdist_inner_join(WMF_skeleton_ROI, labels, by = "subject", max_dist = 1)
-test
-# WMF_labels = merge(WMF_skeleton_ROI, labels, by="subject")
-# WMF_labels
-# agrep(WMF_brain_ROI[1,1], labels$subject, max.distance = 1)
-# labels$subject
+labels = labels %>% drop_na(subject)
+WMF_skeleton_ROI_label = regex_inner_join(WMF_skeleton_ROI, labels, by = "subject")
+# Create column to differentiate between control and test groups
+WMF_skeleton_ROI_label$group = ifelse(grepl("TC{1}", WMF_skeleton_ROI_label$subject.x), "control", "test")
+
+# paired samples for control
+ggplot(WMF_skeleton_ROI_label[94:148,], aes(x = type, y = `All ROIs`))
+
+
+
 
 ```
 
