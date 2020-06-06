@@ -12,6 +12,7 @@ library(readxl)
 library(ggpubr)
 library(tidyr)
 library(dplyr)
+library(fuzzyjoin)
 setwd("C:/Users/edwin/Desktop/Volunteer")
 data_path = "C:/Users/edwin/Desktop/Volunteer/CANTBI DTI JHU stats.xlsx"
 WMF = read_excel(path=data_path, sheet="WMF")
@@ -84,11 +85,43 @@ WMF_skeleton_ROI_label = regex_inner_join(WMF_skeleton_ROI, labels, by = "subjec
 # Create column to differentiate between control and test groups
 WMF_skeleton_ROI_label$group = ifelse(grepl("TC{1}", WMF_skeleton_ROI_label$subject.x), "control", "test")
 
-# paired samples for control
-ggplot(WMF_skeleton_ROI_label[94:148,], aes(x = type, y = `All ROIs`))
+# Run every control group through shapiro test to check normality
+for (i in 2:50){
+  print(shapiro.test(as.numeric(WMF_skeleton_ROI_label[94:148,i])))
+  print(i)
+}
+# A few did not follow normal distribution
+
+#Run every test group through shapiro test
+for (i in 2:50){
+  print(shapiro.test(as.numeric(WMF_skeleton_ROI_label[1:93,i])))
+  print(i)
+}
 
 
+# paired t test for control
+# For loop to run through every ROI column
+for (i in 2:50){
+  test_scores = as.numeric(WMF_skeleton_ROI_label[94:148,i])
+  print(ggplot(WMF_skeleton_ROI_label[94:148,], aes(x = type, y = test_scores)) +
+    stat_boxplot(geom = "errorbar") +
+    geom_boxplot( aes(type, test_scores)) +   
+    ggtitle("Paired t-test on Control") +
+    xlab("Type") +  
+    ylab(colnames(WMF_skeleton_ROI_label)[i]))
+}
 
+# Paired t test for test subjects
+# For loop to run through every ROI column
+for (i in 2:50){
+  test_scores = as.numeric(WMF_skeleton_ROI_label[1:93,i])
+  print(ggplot(WMF_skeleton_ROI_label[1:93,], aes(x = type, y = test_scores)) +
+    stat_boxplot(geom = "errorbar") +
+    geom_boxplot( aes(type, test_scores)) +   
+    ggtitle("Paired t-test on test") +
+    xlab("Type") + 
+    ylab(colnames(WMF_skeleton_ROI_label)[i]))
+}
 
 ```
 
