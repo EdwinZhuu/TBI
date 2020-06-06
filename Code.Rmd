@@ -122,7 +122,21 @@ for (i in 2:50){
     xlab("Type") + 
     ylab(colnames(WMF_skeleton_ROI_label)[i]))
 }
+# WMF_skeleton_ROI_label$
 
+# Run anova with gender as covariate for control
+ggplot(WMF_skeleton_ROI_label[94:148,], aes(x = `Gender (Patient Management)`,
+                                            y = as.numeric(`All ROIs`),
+                                            color = type)) +
+  stat_boxplot(geom = "errorbar") +
+  geom_boxplot(aes (`Gender (Patient Management)`, as.numeric(`All ROIs`)))
+
+# Anova with gender as covariate for test group
+ggplot(WMF_skeleton_ROI_label[1:93,], aes(x = `Gender (Patient Management)`,
+                                            y = as.numeric(`All ROIs`),
+                                            color = type)) +
+  stat_boxplot(geom = "errorbar") +
+  geom_boxplot(aes (`Gender (Patient Management)`, as.numeric(`All ROIs`)))
 ```
 
 
