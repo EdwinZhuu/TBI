@@ -23,8 +23,14 @@ WMF = as.data.frame(WMF)
 
 WMF_skeleton = WMF[1:148,]
 WMF_skeleton$type = ifelse(grepl("A$", WMF_skeleton$subject), "baseline", "6_week")
+# Change the order for type
+# Now baseline is the first box in boxplot
+WMF_skeleton$type = factor(WMF_skeleton$type, levels = c("baseline","6_week"))
 WMF_brain = WMF[152:299,]
 WMF_brain$type = ifelse(grepl("A$", WMF_brain$subject), "baseline", "6_week")
+# Change the order for type
+# Now baseline is the first box in boxplot
+WMF_brain$type = factor(WMF_skeleton$type, levels = c("baseline","6_week"))
 WMF_skeleton_ROI = WMF_skeleton[,c(1:50,73)]
 WMF_skeleton_Tract = WMF_skeleton[,c(1,52:73)]
 WMF_brain_ROI = WMF_skeleton[,c(1:50,73)]
@@ -87,17 +93,23 @@ WMF_skeleton_ROI_label$group = ifelse(grepl("TC{1}", WMF_skeleton_ROI_label$subj
 
 # Run every control group through shapiro test to check normality
 for (i in 2:50){
-  print(shapiro.test(as.numeric(WMF_skeleton_ROI_label[94:148,i])))
-  print(i)
+  result = shapiro.test(as.numeric(WMF_skeleton_ROI_label[94:148,i]))
+  if(result$p.value>0.05){
+    shapiro_control_index = i
+  }
 }
 # A few did not follow normal distribution
+# Store which columns follow normality in variable
 
 #Run every test group through shapiro test
 for (i in 2:50){
-  print(shapiro.test(as.numeric(WMF_skeleton_ROI_label[1:93,i])))
-  print(i)
+  result = shapiro.test(as.numeric(WMF_skeleton_ROI_label[1:93,i]))
+  if(result$p.value>0.05){
+    shapiro_test_index = i
+  }
 }
 
+# Store which columns follow normality in variable
 
 # paired t test for control
 # For loop to run through every ROI column
@@ -125,6 +137,7 @@ for (i in 2:50){
 # WMF_skeleton_ROI_label$
 
 # Run anova with gender as covariate for control
+# Use for loop to go through every single ROI tract
 ggplot(WMF_skeleton_ROI_label[94:148,], aes(x = `Gender (Patient Management)`,
                                             y = as.numeric(`All ROIs`),
                                             color = type)) +
@@ -132,11 +145,17 @@ ggplot(WMF_skeleton_ROI_label[94:148,], aes(x = `Gender (Patient Management)`,
   geom_boxplot(aes (`Gender (Patient Management)`, as.numeric(`All ROIs`)))
 
 # Anova with gender as covariate for test group
+# Use for loop to go through every single ROI tract
 ggplot(WMF_skeleton_ROI_label[1:93,], aes(x = `Gender (Patient Management)`,
                                             y = as.numeric(`All ROIs`),
                                             color = type)) +
   stat_boxplot(geom = "errorbar") +
   geom_boxplot(aes (`Gender (Patient Management)`, as.numeric(`All ROIs`)))
+
+# Looking at age to be a covariant
+# Subset based on range of ages? 
+# ages 10-20, 21-30 etc or split into two groups
+WMF_skeleton_ROI_label[which(as.numeric(WMF_skeleton_ROI_label$`Age at time of injury (please enter) (Patient Management)`) > 25),]
 ```
 
 
