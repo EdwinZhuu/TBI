@@ -87,6 +87,14 @@ labels = read_excel(path=data_path_labels)
 # Used fuzzyjoin
 colnames(labels)[1] = "subject"
 labels = labels %>% drop_na(subject)
+
+# Change the order of levels for labels before joining
+labels$`CAN-TBI Study ID (Screening/Hospital data)`= factor(labels$`CAN-TBI Study ID (Screening/Hospital data)`, levels = unique(labels$`CAN-TBI Study ID (Screening/Hospital data)`))
+
+# Remove cases with no second scan at 6 weeks
+temp = names(which(table(WMF_skeleton_ROI_label$`CAN-TBI Study ID (Screening/Hospital data)`) == 1))
+WMF_skeleton_ROI_label = WMF_skeleton_ROI_label[!(WMF_skeleton_ROI_label$`CAN-TBI Study ID (Screening/Hospital data)` %in% temp),]
+
 WMF_skeleton_ROI_label = regex_inner_join(WMF_skeleton_ROI, labels, by = "subject")
 # Create column to differentiate between control and test groups
 WMF_skeleton_ROI_label$group = ifelse(grepl("TC{1}", WMF_skeleton_ROI_label$subject.x), "control", "test")
@@ -110,13 +118,16 @@ for (i in 2:50){
 # A few did not follow normal distribution
 # Store which columns follow normality in variable, Check using unpaired t test
 # Look at normal distrbution using paired t test 
+for (i in shapiro_control_index_norm){
+  print(length(WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "baseline" & WMF_skeleton_ROI_label$group == "control"),i]))
+  print(length(WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "6_week" & WMF_skeleton_ROI_label$group == "control"),i]))
+}
 
 for (i in shapiro_control_index_norm){
-  t.test(WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "baseline" & WMF_skeleton_ROI_label$group != "test"),i],
-         WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "6_week" & WMF_skeleton_ROI_label$group != "test"),i], 
+  t.test(WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "baseline" & WMF_skeleton_ROI_label$group == "control"),i],
+         WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "6_week" & WMF_skeleton_ROI_label$group == "control"),i], 
          paired = TRUE, alternative = "two.sided")
 }
-WMF_skeleton_ROI_label
 
 #Run every test group through shapiro test
 shapiro_test_index_norm = vector("numeric")
