@@ -91,13 +91,14 @@ labels = labels %>% drop_na(subject)
 # Change the order of levels for labels before joining
 labels$`CAN-TBI Study ID (Screening/Hospital data)`= factor(labels$`CAN-TBI Study ID (Screening/Hospital data)`, levels = unique(labels$`CAN-TBI Study ID (Screening/Hospital data)`))
 
-# Remove cases with no second scan at 6 weeks
-temp = names(which(table(WMF_skeleton_ROI_label$`CAN-TBI Study ID (Screening/Hospital data)`) == 1))
-WMF_skeleton_ROI_label = WMF_skeleton_ROI_label[!(WMF_skeleton_ROI_label$`CAN-TBI Study ID (Screening/Hospital data)` %in% temp),]
-
 WMF_skeleton_ROI_label = regex_inner_join(WMF_skeleton_ROI, labels, by = "subject")
 # Create column to differentiate between control and test groups
 WMF_skeleton_ROI_label$group = ifelse(grepl("TC{1}", WMF_skeleton_ROI_label$subject.x), "control", "test")
+
+# Remove cases with no second scan at 6 weeks
+temp = names(which(table(WMF_skeleton_ROI_label$`Record ID`) == 1))
+WMF_skeleton_ROI_label = WMF_skeleton_ROI_label[!(WMF_skeleton_ROI_label$`Record ID` %in% temp),]
+WMF_skeleton_ROI_label
 
 # Run every control group through shapiro test to check normality
 shapiro_control_index_norm = vector("numeric")
@@ -119,14 +120,18 @@ for (i in 2:50){
 # Store which columns follow normality in variable, Check using unpaired t test
 # Look at normal distrbution using paired t test 
 for (i in shapiro_control_index_norm){
-  print(length(WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "baseline" & WMF_skeleton_ROI_label$group == "control"),i]))
-  print(length(WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "6_week" & WMF_skeleton_ROI_label$group == "control"),i]))
+  control_normpvalue = t.test(as.numeric(WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "baseline" & WMF_skeleton_ROI_label$group == "control"),i]),
+         as.numeric(WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "6_week" & WMF_skeleton_ROI_label$group == "control"),i]), 
+         paired = TRUE, alternative = "two.sided")
+  print(i)
+  print(control_normpvalue$p.value)
 }
 
-for (i in shapiro_control_index_norm){
-  t.test(WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "baseline" & WMF_skeleton_ROI_label$group == "control"),i],
-         WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "6_week" & WMF_skeleton_ROI_label$group == "control"),i], 
-         paired = TRUE, alternative = "two.sided")
+#Use wilcox test to test cases that don't follow normality
+for (i in shapiro_control_index_nonnorm){
+  control_nonnormpvalue = wilcox.test(as.numeric(WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "baseline" & WMF_skeleton_ROI_label$group == "control"),i]), as.numeric(WMF_skeleton_ROI_label[which(WMF_skeleton_ROI_label$type == "6_week" & WMF_skeleton_ROI_label$group == "control"),i]), paired = TRUE, alternative = "two.sided")
+  print(i)
+  print(control_pvalue$p.value)
 }
 
 #Run every test group through shapiro test
