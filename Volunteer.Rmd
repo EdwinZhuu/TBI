@@ -1,0 +1,51 @@
+---
+title: "glm"
+output: html_document
+---
+
+```{r, include=FALSE}
+
+library(readxl)
+library(fuzzyjoin)
+library(dplyr)
+library(tidyr)
+
+# Open WMF table
+WMF = read_excel("C:/Users/Edwin/Desktop/Volunteer/CANTBI DTI JHU stats.xlsx", sheet = "WMF", skip = 1, col_names = TRUE)
+labels = read_excel("C:/Users/edwin/Desktop/Volunteer/CANTBIANationalBioba_DATA_LABELS_2020-01-13_0952.xlsx")
+
+colnames(labels)[1] = "subject"
+colnames(labels)[5] = "age"
+labels = labels %>% drop_na(subject)
+
+labelsWMF = regex_inner_join(WMF, labels, by = "subject")
+colnames(labelsWMF)[1] = "subject"
+WMF_Skeleton_ROI = labelsWMF[1:148,c(1:50,74:89)]
+WMF_Skeleton_ROI$group = ifelse(grepl("TC{1}", WMF_Skeleton_ROI$subject), "0", "1")
+WMF_Skeleton_ROI[,2:50] = lapply(WMF_Skeleton_ROI[,2:50], function(x) as.double(as.character(x)))
+
+test_matrix = matrix(nrow = 4, ncol = 49)
+rownames(test_matrix) = c("AIC", "P-value", "Adjusted P-value", "Effect Size")
+colnames(test_matrix) = colnames(WMF_Skeleton_ROI[2:50])
+
+test = summary(glm(unlist(WMF_Skeleton_ROI[,2]) ~ age + group, data = WMF_Skeleton_ROI, family = gaussian))
+test$coefficients[3,4]
+
+for (i in 2:50){
+  output = glm(unlist(WMF_Skeleton_ROI[,i]) ~ age + group, data = WMF_Skeleton_ROI, family = gaussian)
+  mean_test = WMF_Skeleton_ROI[which(WMF_Skeleton_ROI$group == 1), i]
+  mean_test = unlist(mean_test[!is.na(mean_test),1])
+  mean_control = WMF_Skeleton_ROI[which(WMF_Skeleton_ROI$group == 0), i]
+  mean_control = unlist(mean_control[!is.na(mean_control),1])
+  test_matrix[1,i-1] = output$aic
+  test_matrix[2,i-1] = summary(output)$coefficients[3,4]
+  #test_matrix[2,i-1] = mean(mean_test)
+  #test_matrix[3,i-1] = sd(mean_test)
+  #test_matrix[4,i-1] = mean(mean_control)
+  #test_matrix[5,i-1] = sd(mean_control)
+  test_matrix[4,i-1] = sqrt(((length(mean_test) - 1) * sd(mean_test)^2 + (length(mean_control) - 1) * sd(mean_control)^2)/
+    (length(mean_test) + length(mean_control) -2))
+}
+test_matrix[3,] = p.adjust(test_matrix[2,], method = "fdr")
+test_matrix
+```
