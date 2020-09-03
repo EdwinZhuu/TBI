@@ -28,9 +28,6 @@ test_matrix = matrix(nrow = 4, ncol = 49)
 rownames(test_matrix) = c("AIC", "P-value", "Adjusted P-value", "Effect Size")
 colnames(test_matrix) = colnames(WMF_Skeleton_ROI[2:50])
 
-test = summary(glm(unlist(WMF_Skeleton_ROI[,2]) ~ age + group, data = WMF_Skeleton_ROI, family = gaussian))
-test$coefficients[3,4]
-
 for (i in 2:50){
   output = glm(unlist(WMF_Skeleton_ROI[,i]) ~ age + group, data = WMF_Skeleton_ROI, family = gaussian)
   mean_test = WMF_Skeleton_ROI[which(WMF_Skeleton_ROI$group == 1), i]
