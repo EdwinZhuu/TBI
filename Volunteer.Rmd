@@ -24,6 +24,12 @@ WMF_Skeleton_ROI = labelsWMF[1:148,c(1:50,74:89)]
 WMF_Skeleton_ROI$group = ifelse(grepl("TC{1}", WMF_Skeleton_ROI$subject), "0", "1")
 WMF_Skeleton_ROI[,2:50] = lapply(WMF_Skeleton_ROI[,2:50], function(x) as.double(as.character(x)))
 
+WMF_Skeleton_ROI_Centered = WMF_Skeleton_ROI[,c(1:50,54,67)]
+WMF_Skeleton_ROI_Centered$`Centered Age` = WMF_Skeleton_ROI_Centered$age - mean(unlist(WMF_Skeleton_ROI_Centered$age))
+WMF_Skeleton_ROI_Centered$`Centered Age`
+WMF_Skeleton_ROI_Centered[,52]
+WMF_Skeleton_ROI[,67]
+
 test_matrix = matrix(nrow = 5, ncol = 49)
 rownames(test_matrix) = c("AIC", "AIC-group^2", "P-value", "Adjusted P-value", "Effect Size")
 colnames(test_matrix) = colnames(WMF_Skeleton_ROI[2:50])
@@ -42,15 +48,29 @@ for (i in 2:50){
   #test_matrix[3,i-1] = sd(mean_test)
   #test_matrix[4,i-1] = mean(mean_control)
   #test_matrix[5,i-1] = sd(mean_control)
-  test_matrix[5,i-1] = sqrt(((length(mean_test) - 1) * sd(mean_test)^2 + (length(mean_control) - 1) * sd(mean_control)^2)/
-    (length(mean_test) + length(mean_control) -2))
+  test_matrix[5,i-1] = (mean(mean_test) - mean(mean_control))/
+                          (sqrt((length(mean_test) - 1) * sd(mean_test)^2 + (length(mean_control) - 1) * sd(mean_control)^2)/
+                                  (length(mean_test) + length(mean_control) -2))
   if (i == 50){
     test_matrix[4,] = p.adjust(test_matrix[3,], method = "fdr")
   }
 }
-test_matrix
 
-WMF_Skeleton_ROI_Centered = WMF_Skeleton_ROI[,c(1:50,54)]
-WMF_Skeleton_ROI_Centered$`Centered Age` = WMF_Skeleton_ROI_Centered$age - mean(unlist(WMF_Skeleton_ROI_Centered$age))
-WMF_Skeleton_ROI_Centered$`Centered Age`
+comparison_matrix = matrix(nrow = 6, ncol = 49)
+rownames(comparison_matrix) = c("P-value raw Int", "P-value centered Int", "P-value raw age", "P-value centered age", "P-value raw group", "P-value centered group")
+colnames(comparison_matrix) = colnames(WMF_Skeleton_ROI[2:50])
+
+for (j in 2:50){
+  raw_output = glm(unlist(WMF_Skeleton_ROI[,j]) ~ age + group, data = WMF_Skeleton_ROI, family = gaussian)
+  centered_output = glm(unlist(WMF_Skeleton_ROI_Centered[,j]) ~ `Centered Age` + group, data = WMF_Skeleton_ROI_Centered, family = gaussian)
+  comparison_matrix[1,j-1] = summary(raw_output)$coefficient[1,4]
+  comparison_matrix[2,j-1] = summary(centered_output)$coefficient[1,4]
+  comparison_matrix[3,j-1] = summary(raw_output)$coefficient[2,4]
+  comparison_matrix[4,j-1] = summary(centered_output)$coefficient[2,4]
+  comparison_matrix[5,j-1] = summary(raw_output)$coefficient[3,4]
+  comparison_matrix[6,j-1] = summary(centered_output)$coefficient[3,4]
+}
+summary(raw_output)$coefficient
+summary(centered_output)$coefficient
+comparison_matrix
 ```
