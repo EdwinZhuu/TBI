@@ -12,7 +12,8 @@ library(tidyr)
 library(xlsx)
 
 # Open WMF table
-WMF = read_excel("C:/Users/Edwin/Desktop/Volunteer/CANTBI DTI JHU stats.xlsx", sheet = "WMF", skip = 1, col_names = TRUE)
+# Switch sheet depending on which sheet you need to save
+WMF = read_excel("C:/Users/Edwin/Desktop/Volunteer/CANTBI DTI JHU stats.xlsx", sheet = "RD", skip = 1, col_names = TRUE)
 labels = read_excel("C:/Users/edwin/Desktop/Volunteer/CANTBIANationalBioba_DATA_LABELS_2020-01-13_0952.xlsx")
 
 colnames(labels)[1] = "subject"
@@ -137,6 +138,11 @@ all_values2 = rbind(all_values2, WMF_Tract_matrix)
 empty_matrix_col = matrix(data = NA, nrow = 16, ncol = 1)
 all_values = cbind(all_values, empty_matrix_col)
 all_values = cbind(all_values, all_values2)
+all_values
 
-write.xlsx(all_values, "Output.xlsx", row.names = TRUE, col.names = TRUE)
+#write.xlsx(all_values, "Output.xlsx", row.names = TRUE, col.names = TRUE)
+#write.xlsx(all_values, "Output.xlsx", sheetName = "FA", row.names = TRUE, col.names = TRUE, append = TRUE)
+#write.xlsx(all_values, "Output.xlsx", sheetName = "MD", row.names = TRUE, col.names = TRUE, append = TRUE)
+#write.xlsx(all_values, "Output.xlsx", sheetName = "AD", row.names = TRUE, col.names = TRUE, append = TRUE)
+write.xlsx(all_values, "Output.xlsx", sheetName = "RD", row.names = TRUE, col.names = TRUE, append = TRUE)
 ```
